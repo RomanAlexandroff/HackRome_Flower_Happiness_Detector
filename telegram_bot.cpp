@@ -25,7 +25,7 @@ static void reply_machine(String text)
         message += ", Current moisture evaluation: " + String(rtc_g.moisture);
         message += " which corresponds to " + String(how_moist()) + "%";
         message += ", Software version " + String(SOFTWARE_VERSION);
-        bot.sendMessage(rtc_g.chat_id, message, "");
+        bot.sendMessage(rtc_g.chat_id, message);
         message.clear();
         return;
     }
@@ -46,7 +46,7 @@ static void reply_machine(String text)
     }
     else if (text == "/reboot")
     {
-        bot.sendMessage(rtc_g.chat_id, "Rebooting!", "");
+        bot.sendMessage(rtc_g.chat_id, "Rebooting!");
         rtc_g.reboot = true;
         return;
     }
@@ -55,7 +55,7 @@ static void reply_machine(String text)
         message = "I am sorry, but I do not understand \"";
         message += text + "\"\n\n";
         message = "You may try to use \"/status\" command";
-        bot.sendMessage(rtc_g.chat_id, message, "");
+        bot.sendMessage(rtc_g.chat_id, message);
     }
 }
 
@@ -65,7 +65,7 @@ static void  new_messages(short message_count)
     String  text;
 
     i = 0;
-    DEBUG_PRINTF("\n\n[TELEGRAM BOT] Handling new Telegram messages", "");
+    DEBUG_PRINTF("\n\n[TELEGRAM BOT] Handling new Telegram messages");
     DEBUG_PRINTF("\n[TELEGRAM BOT] Number of messages to handle: %d\n", message_count);
     while (i < message_count) 
     {
@@ -81,7 +81,7 @@ static void  new_messages(short message_count)
     }
 }
 
-void IRAM_ATTR  telegram_check(void)
+void  telegram_check(void)
 {
     uint8_t i;
     uint8_t got_connection;
@@ -98,7 +98,7 @@ void IRAM_ATTR  telegram_check(void)
     }
     if (got_connection != WL_CONNECTED)
     {
-        DEBUG_PRINTF("\n[TELEGRAM BOT] Failed to reply to the User due to Wi-Fi connection issues\n", "");
+        DEBUG_PRINTF("\n[TELEGRAM BOT] Failed to reply to the User due to Wi-Fi connection issues\n");
         return;
     }
     else

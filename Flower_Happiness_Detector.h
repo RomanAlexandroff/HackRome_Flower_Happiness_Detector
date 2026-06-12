@@ -24,15 +24,15 @@
 # include <esp_system.h>                                               // for deep sleep
 # include <esp_sleep.h>                                                // for deep sleep
 # include <driver/adc.h>                                               // for ADC measurements of battery and sensor
-# include "driver/temp_sensor.h"                                       // for internal temperature sensor
+# include "driver/temperature_sensor.h"                                // for internal temperature sensor
 # include "globals.h"
 
 # define SOFTWARE_VERSION        4.01
 # define DEBUG                                                         // comment out this line to turn off Serial output
 # ifdef DEBUG
-  # define DEBUG_PRINTF(x, y) Serial.printf(x, y)
+  # define DEBUG_PRINTF(...) Serial.printf(__VA_ARGS__)
 # else
-  # define DEBUG_PRINTF(x, y)
+  # define DEBUG_PRINTF(...)
 # endif
 # define CONNECT_TIMEOUT         3000                                  // WiFi timeout per each AP, in milliseconds. Increase if cannot connect.
 # define DEAD_BATTERY_SLEEP      86400000ul                            // 24 hours
@@ -55,18 +55,13 @@ void             go_to_sleep(uint64_t time_in_millis);
 void             low_battery_handle(void);
 bool             charging_detection(void);
 void             battery_check(void);
-static void      moisture_sensor(int8_t status);
 void             moisture_check(void);
-static void      temperature_sensor(int8_t status);
-static void      temperature_calibration(void);
 void             temperature_check(void);
 void IRAM_ATTR   temp_sensor_init(void);
 void IRAM_ATTR   react(void);
 bool IRAM_ATTR   get_time(void);
 int IRAM_ATTR    how_moist(void);
 void IRAM_ATTR   notify_user(void);
-static void      reply_machine(String text);
-static void      new_messages(short message_count);
 void IRAM_ATTR   telegram_check(void);
 unsigned int     time_till_wakeup(void);
 short IRAM_ATTR  write_spiffs_file(const char* file_name, String input);

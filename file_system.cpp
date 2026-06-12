@@ -12,7 +12,7 @@
 
 #include "Flower_Happiness_Detector.h"
 
-short IRAM_ATTR  write_spiffs_file(const char* file_name, String input)
+short write_spiffs_file(const char* file_name, String input)
 {
     short i;
 
@@ -38,7 +38,7 @@ short IRAM_ATTR  write_spiffs_file(const char* file_name, String input)
     return (1);
 }
 
-String IRAM_ATTR  read_spiffs_file(const char* file_name)
+String  read_spiffs_file(const char* file_name)
 {
     short  i;
     String output;
@@ -64,11 +64,11 @@ String IRAM_ATTR  read_spiffs_file(const char* file_name)
     return (output);
 }
 
-void IRAM_ATTR  files_restore(void)
+void  files_restore(void)
 {
     if (!LittleFS.exists("/ota.txt"))
     {
-        DEBUG_PRINTF("\n[FILE SYSTEM] The ota.txt file does not exist. Creating...\n", "");
+        DEBUG_PRINTF("\n[FILE SYSTEM] The ota.txt file does not exist. Creating...\n");
         write_spiffs_file("/ota.txt", CLOSED);
         DEBUG_PRINTF("[FILE SYSTEM] ota.txt file created. The rtc_g.ota value is recorded as %d\n", read_spiffs_file("/ota.txt").toInt() != 0);
     }
@@ -76,13 +76,13 @@ void IRAM_ATTR  files_restore(void)
     DEBUG_PRINTF("[FILE SYSTEM] The rtc_g.ota variable has been set to %d\n", rtc_g.ota);
     if (!LittleFS.exists("/chat_id.txt"))
     {
-        DEBUG_PRINTF("\n[FILE SYSTEM] The chat_id.txt file does not exist. Creating...\n", "");
+        DEBUG_PRINTF("\n[FILE SYSTEM] The chat_id.txt file does not exist. Creating...\n");
         write_spiffs_file("/chat_id.txt", CHAT_ID);
-        DEBUG_PRINTF("[FILE SYSTEM] chat_id.txt file created. The rtc_g.chat_id value is recorded as %d\n", read_spiffs_file("/chat_id.txt"));
+        DEBUG_PRINTF("[FILE SYSTEM] chat_id.txt file created. The rtc_g.chat_id value is recorded as %s\n", read_spiffs_file("/chat_id.txt").c_str());
     }
     rtc_g.chat_id = read_spiffs_file("/chat_id.txt");
     rtc_g.chat_id.trim();
-    DEBUG_PRINTF("[FILE SYSTEM] The rtc_g.chat_id variable has been set to %d\n", rtc_g.chat_id);
+    DEBUG_PRINTF("[FILE SYSTEM] The rtc_g.chat_id variable has been set to %s\n", rtc_g.chat_id.c_str());
 }
 
  

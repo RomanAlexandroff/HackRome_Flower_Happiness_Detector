@@ -15,9 +15,9 @@
 void  go_to_sleep(uint64_t time_in_millis)
 {
     secured_client.stop();
-    DEBUG_PRINTF("The device was running for %d second(s) this time\n", (millis() / 1000));
-    DEBUG_PRINTF("Going to sleep for %u seconds.\n", time_in_millis / 1000);
-    DEBUG_PRINTF("\nDEVICE STOP\n\n\n", "");
+    DEBUG_PRINTF("The device was running for %lu second(s) this time\n", (millis() / 1000));
+    DEBUG_PRINTF("Going to sleep for %llu seconds.\n", time_in_millis / 1000);
+    DEBUG_PRINTF("\nDEVICE STOP\n\n\n");
     esp_sleep_enable_timer_wakeup(time_in_millis * 1000);
     esp_deep_sleep_start();
 }

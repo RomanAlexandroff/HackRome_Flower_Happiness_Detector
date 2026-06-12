@@ -33,7 +33,7 @@ void ota_init(void)
         }
         if (got_connection != WL_CONNECTED)
         {
-            DEBUG_PRINTF("\n[OTA] Failed to initialise OTA update due to Wi-Fi connection issues\n", "");
+            DEBUG_PRINTF("\n[OTA] Failed to initialise OTA update due to Wi-Fi connection issues\n");
             return;
         }
         ArduinoOTA.setHostname(fullhostname);
@@ -45,28 +45,28 @@ void ota_init(void)
                 else // U_SPIFFS
                     type = "filesystem";
                 DEBUG_PRINTF("[OTA] Start updating %s", type.c_str());
-                bot.sendMessage(rtc_g.chat_id, "Updating...", "");
+                bot.sendMessage(rtc_g.chat_id, "Updating...");
             })
             .onEnd([]() {
-                DEBUG_PRINTF("\n[OTA] End", "");
+                DEBUG_PRINTF("\n[OTA] End");
                 rtc_g.ota = false;
                 write_spiffs_file("/ota.txt", CLOSED);
-                bot.sendMessage(rtc_g.chat_id, "Successfully updated!", "");
+                bot.sendMessage(rtc_g.chat_id, "Successfully updated!");
             })
             .onProgress([](unsigned int progress, unsigned int total) {
                 DEBUG_PRINTF("\n[OTA] Progress: %u%%\r", (progress / (total / 100)));
             })
             .onError([](ota_error_t error) {
                 DEBUG_PRINTF("\n[OTA] Error[%u]: ", error);
-                if (error == OTA_AUTH_ERROR) DEBUG_PRINTF("Auth Failed\n", "");
-                else if (error == OTA_BEGIN_ERROR) DEBUG_PRINTF("Begin Failed\n", "");
-                else if (error == OTA_CONNECT_ERROR) DEBUG_PRINTF("Connect Failed\n", "");
-                else if (error == OTA_RECEIVE_ERROR) DEBUG_PRINTF("Receive Failed\n", "");
-                else if (error == OTA_END_ERROR) DEBUG_PRINTF("End Failed\n", "");
-                bot.sendMessage(rtc_g.chat_id, "Something went wrong. Updating was not completed. Try again later", "");
+                if (error == OTA_AUTH_ERROR) DEBUG_PRINTF("Auth Failed\n");
+                else if (error == OTA_BEGIN_ERROR) DEBUG_PRINTF("Begin Failed\n");
+                else if (error == OTA_CONNECT_ERROR) DEBUG_PRINTF("Connect Failed\n");
+                else if (error == OTA_RECEIVE_ERROR) DEBUG_PRINTF("Receive Failed\n");
+                else if (error == OTA_END_ERROR) DEBUG_PRINTF("End Failed\n");
+                bot.sendMessage(rtc_g.chat_id, "Something went wrong. Updating was not completed. Try again later");
             });
-        DEBUG_PRINTF("\n[OTA] Ready to update\n\n", "");
-        bot.sendMessage(rtc_g.chat_id, "OTA Update is active", "");
+        DEBUG_PRINTF("\n[OTA] Ready to update\n\n");
+        bot.sendMessage(rtc_g.chat_id, "OTA Update is active");
         ArduinoOTA.begin();
     }
 }
@@ -79,14 +79,14 @@ void ota_waiting_loop(void)
         while (rtc_g.ota && ota_limit < 1000)                                       // 1000 gives 5 minutes to perform OTA
         {
             ArduinoOTA.handle();
-            DEBUG_PRINTF("\n[OTA] Active", "");
+            DEBUG_PRINTF("\n[OTA] Active");
             ota_limit++;
             delay(300);
         }
         rtc_g.ota = false;
         write_spiffs_file("/ota.txt", CLOSED);
-        bot.sendMessage(rtc_g.chat_id, "OTA Update port closed", "");
-        DEBUG_PRINTF("\n[OTA] OTA Update port closed", "");
+        bot.sendMessage(rtc_g.chat_id, "OTA Update port closed");
+        DEBUG_PRINTF("\n[OTA] OTA Update port closed");
     }
 }
 

@@ -12,7 +12,7 @@
 
 #include "Flower_Happiness_Detector.h"
 
-bool IRAM_ATTR  get_time(void)
+bool  get_time(void)
 {
     const char* ntp_server PROGMEM = "pool.ntp.org";
     const long  gmt_offset_sec = TIME_ZONE * 3600;
@@ -33,7 +33,7 @@ bool IRAM_ATTR  get_time(void)
     }
     if (got_connection != WL_CONNECTED)
     {
-        DEBUG_PRINTF("Failed to obtain time due to Wi-Fi connection issues\n", "");
+        DEBUG_PRINTF("Failed to obtain time due to Wi-Fi connection issues\n");
         return (false);
     }
     configTime(gmt_offset_sec, daylight_offset_sec, ntp_server);
@@ -48,7 +48,7 @@ bool IRAM_ATTR  get_time(void)
     }
     if (!got_time)
     {
-        DEBUG_PRINTF("Failed to obtain time from the NTP server\n", "");
+        DEBUG_PRINTF("Failed to obtain time from the NTP server\n");
         return (false);
     }
     rtc_g.hour = time_info.tm_hour;
@@ -56,7 +56,7 @@ bool IRAM_ATTR  get_time(void)
     rtc_g.day = time_info.tm_mday;
     rtc_g.month = 1 + time_info.tm_mon;
     rtc_g.year = 1900 + time_info.tm_year;
-    DEBUG_PRINTF("\nObtained time from the NTP server is as follows:\n", "");
+    DEBUG_PRINTF("\nObtained time from the NTP server is as follows:\n");
     DEBUG_PRINTF("  --hour:   %d\n", rtc_g.hour);
     DEBUG_PRINTF("  --minute: %d\n", rtc_g.minute);
     DEBUG_PRINTF("  --day:    %d\n", rtc_g.day);

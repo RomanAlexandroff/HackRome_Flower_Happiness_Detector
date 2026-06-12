@@ -14,8 +14,8 @@
 
 void  low_battery_handle(void)
 {
-    DEBUG_PRINTF("\n[BATTERY] Low battery! Cannot proceed work. Need charging\n", "");
-    bot.sendMessage(rtc_g.chat_id, "The sensor's battery is low! Need charging. Turning off", "");
+    DEBUG_PRINTF("\n[BATTERY] Low battery! Cannot proceed work. Need charging\n");
+    bot.sendMessage(rtc_g.chat_id, "The sensor's battery is low! Need charging. Turning off");
     go_to_sleep(DEAD_BATTERY_SLEEP);
 }
 
