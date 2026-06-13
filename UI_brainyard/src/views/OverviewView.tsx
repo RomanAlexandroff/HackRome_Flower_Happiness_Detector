@@ -1,8 +1,9 @@
-import { Bell, Droplets, Radio, Thermometer } from "lucide-react";
+import { Bell, ClipboardCheck, Droplets, Plus, Radio, Thermometer } from "lucide-react";
 import { ActivityItem } from "../components/ActivityItem";
 import { AlertItem } from "../components/AlertItem";
 import { EmptyState } from "../components/EmptyState";
 import { MetricCard } from "../components/MetricCard";
+import type { FieldObservation } from "../types/fieldObservation";
 import { PlotCard } from "../components/PlotCard";
 import { TimeSeriesChart } from "../components/TimeSeriesChart";
 import type {
@@ -13,6 +14,7 @@ import type {
   Plot,
 } from "../types/vineyard";
 import { buildSoilMoistureComparisonData } from "../utils/chartData";
+import { getPrimaryObservationIndicator, observationTypeLabels } from "../utils/fieldObservationCalculations";
 import { formatPercent, formatTemperature } from "../utils/formatters";
 
 type OverviewViewProps = {
@@ -20,8 +22,11 @@ type OverviewViewProps = {
   measurements: Measurement[];
   alerts: Alert[];
   activities: Activity[];
+  fieldObservations: FieldObservation[];
   irrigationMarkers: IrrigationMarker[];
+  onAddObservation: () => void;
   onSelectPlot: (plotId: string) => void;
+  onViewFieldObservations: () => void;
 };
 
 export function OverviewView({
@@ -29,8 +34,11 @@ export function OverviewView({
   measurements,
   alerts,
   activities,
+  fieldObservations,
   irrigationMarkers,
+  onAddObservation,
   onSelectPlot,
+  onViewFieldObservations,
 }: OverviewViewProps) {
   const averageSoilMoisture =
     plots.reduce((total, plot) => total + plot.soilMoisture, 0) / Math.max(plots.length, 1);
@@ -42,6 +50,19 @@ export function OverviewView({
   const overviewMarkers = irrigationMarkers
     .filter((marker) => marker.plotId === "plot-a")
     .map((marker) => ({ timestamp: marker.timestamp, label: marker.label }));
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const recentFieldObservations = fieldObservations.filter(
+    (observation) => new Date(observation.observedAt) >= sevenDaysAgo,
+  );
+  const latestObservation = [...fieldObservations].sort(
+    (a, b) => new Date(b.observedAt).getTime() - new Date(a.observedAt).getTime(),
+  )[0];
+  const agronomistReviewCount = fieldObservations.filter(
+    (observation) =>
+      observation.observationType === "phytosanitary_inspection" &&
+      (observation.actionRequired === "Agronomist review" || observation.actionRequired === "Urgent inspection"),
+  ).length;
 
   function getPlotLabel(plotId?: string): string | undefined {
     const plot = plots.find((item) => item.id === plotId);
@@ -75,6 +96,52 @@ export function OverviewView({
           title="Open alerts"
           value={String(openAlerts)}
         />
+      </section>
+
+
+      <section className="view-card observation-dashboard-card" aria-labelledby="field-observation-summary-title">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Field evidence</p>
+            <h2 id="field-observation-summary-title">Field observations</h2>
+            <p>Manual agronomic checks from vineyard visits, ready to compare with sensor trends.</p>
+          </div>
+          <div className="section-heading__icon" aria-hidden="true">
+            <ClipboardCheck size={26} />
+          </div>
+        </div>
+
+        <div className="observation-dashboard-grid">
+          <div>
+            <span>Last 7 days</span>
+            <strong>{recentFieldObservations.length}</strong>
+            <small>observations recorded</small>
+          </div>
+          <div>
+            <span>Latest observation</span>
+            <strong>
+              {latestObservation
+                ? observationTypeLabels[latestObservation.observationType]
+                : "No observations yet"}
+            </strong>
+            <small>{latestObservation ? `${latestObservation.plotName} · ${getPrimaryObservationIndicator(latestObservation)}` : "Start from the next vineyard visit"}</small>
+          </div>
+          <div>
+            <span>Agronomist review</span>
+            <strong>{agronomistReviewCount}</strong>
+            <small>items requiring review or urgent inspection</small>
+          </div>
+        </div>
+
+        <div className="observation-dashboard-actions">
+          <button className="button button--primary" type="button" onClick={onAddObservation}>
+            <Plus size={18} aria-hidden="true" />
+            Add field observation
+          </button>
+          <button className="button button--secondary" type="button" onClick={onViewFieldObservations}>
+            View all observations
+          </button>
+        </div>
       </section>
 
       <section className="chart-card" aria-labelledby="moisture-chart-title">

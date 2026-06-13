@@ -1,7 +1,9 @@
-import { ArrowLeft, BatteryLow, Droplets, Radio, Thermometer } from "lucide-react";
+import { ArrowLeft, BatteryLow, ClipboardCheck, Droplets, Plus, Radio, Thermometer } from "lucide-react";
 import { EmptyState } from "../components/EmptyState";
+import { FieldObservationCard } from "../components/FieldObservationCard";
 import { StatusBadge } from "../components/StatusBadge";
 import { TimeSeriesChart } from "../components/TimeSeriesChart";
+import type { FieldObservation } from "../types/fieldObservation";
 import type { FieldEvent, IrrigationMarker, Measurement, Plot, Sensor } from "../types/vineyard";
 import { buildPlotHistoryData, getMarkersForPlot } from "../utils/chartData";
 import { formatDateTime, formatPercent, formatTemperature } from "../utils/formatters";
@@ -11,9 +13,12 @@ type PlotDetailViewProps = {
   sensors: Sensor[];
   measurements: Measurement[];
   fieldEvents: FieldEvent[];
+  fieldObservations: FieldObservation[];
   irrigationMarkers: IrrigationMarker[];
+  onAddObservation: () => void;
   onBack: () => void;
   onAnalyzeIrrigationResponse: () => void;
+  onOpenObservation: (observationId: string) => void;
 };
 
 export function PlotDetailView({
@@ -21,12 +26,18 @@ export function PlotDetailView({
   sensors,
   measurements,
   fieldEvents,
+  fieldObservations,
   irrigationMarkers,
+  onAddObservation,
   onBack,
   onAnalyzeIrrigationResponse,
+  onOpenObservation,
 }: PlotDetailViewProps) {
   const plotSensors = sensors.filter((sensor) => sensor.plotId === plot.id);
   const plotEvents = fieldEvents.filter((fieldEvent) => fieldEvent.plotId === plot.id);
+  const plotObservations = fieldObservations
+    .filter((observation) => observation.plotId === plot.id)
+    .sort((a, b) => new Date(b.observedAt).getTime() - new Date(a.observedAt).getTime());
   const chartData = buildPlotHistoryData(measurements, plot.id);
   const markers = getMarkersForPlot(irrigationMarkers, plot.id);
 
@@ -87,6 +98,34 @@ export function PlotDetailView({
             lines={[{ dataKey: "soilMoisture", name: `${plot.name} soil moisture`, color: "#1f6b46" }]}
             markers={markers}
           />
+        </div>
+      </section>
+
+
+      <section className="view-card" aria-labelledby="plot-observations-title">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Human observations</p>
+            <h2 id="plot-observations-title">Field observations for {plot.name}</h2>
+            <p>Recent manual checks from agronomists, technicians, and vineyard staff.</p>
+          </div>
+          <button className="button button--primary" type="button" onClick={onAddObservation}>
+            <Plus size={18} aria-hidden="true" />
+            Add observation
+          </button>
+        </div>
+        <div className="observation-list observation-list--compact">
+          {plotObservations.length > 0 ? (
+            plotObservations.slice(0, 3).map((observation) => (
+              <FieldObservationCard key={observation.id} observation={observation} onOpen={onOpenObservation} />
+            ))
+          ) : (
+            <EmptyState
+              description="Add a vigour check or phytosanitary inspection for this plot during the next field visit."
+              icon={ClipboardCheck}
+              title="No field observations for this plot"
+            />
+          )}
         </div>
       </section>
 

@@ -7,7 +7,12 @@ type StatusBadgeProps = {
 function getTone(label: string): string {
   const normalized = label.toLowerCase();
 
-  if (normalized.includes("healthy") || normalized.includes("online") || normalized.includes("synchronized")) {
+  if (
+    normalized.includes("healthy") ||
+    normalized.includes("online") ||
+    normalized.includes("synchronized") ||
+    normalized.includes("completed")
+  ) {
     return "success";
   }
 
@@ -15,7 +20,13 @@ function getTone(label: string): string {
     return "critical";
   }
 
-  if (normalized.includes("warning") || normalized.includes("battery") || normalized.includes("preparing") || normalized.includes("uploading")) {
+  if (
+    normalized.includes("warning") ||
+    normalized.includes("battery") ||
+    normalized.includes("preparing") ||
+    normalized.includes("uploading") ||
+    normalized.includes("draft")
+  ) {
     return "warning";
   }
 

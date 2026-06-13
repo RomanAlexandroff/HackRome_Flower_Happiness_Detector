@@ -1,4 +1,5 @@
 import {
+  ClipboardCheck,
   ClipboardList,
   FlaskConical,
   LayoutDashboard,
@@ -7,7 +8,13 @@ import {
   Sprout,
 } from "lucide-react";
 
-export type NavigationKey = "overview" | "plots" | "field-log" | "studies" | "settings";
+export type NavigationKey =
+  | "overview"
+  | "plots"
+  | "field-log"
+  | "field-observations"
+  | "studies"
+  | "settings";
 
 type SidebarProps = {
   activeView: NavigationKey;
@@ -18,6 +25,7 @@ const navigationItems = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "plots", label: "Plots", icon: Map },
   { id: "field-log", label: "Field Log", icon: ClipboardList },
+  { id: "field-observations", label: "Field Observations", icon: ClipboardCheck },
   { id: "studies", label: "Studies", icon: FlaskConical },
   { id: "settings", label: "Settings", icon: Settings },
 ] satisfies Array<{

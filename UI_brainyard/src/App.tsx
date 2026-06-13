@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { EventForm } from "./components/EventForm";
+import { FieldObservationDetail } from "./components/FieldObservationDetail";
+import { FieldObservationForm } from "./components/FieldObservationForm";
 import { Header } from "./components/Header";
 import { LoadingState } from "./components/LoadingState";
 import { Sidebar, type NavigationKey } from "./components/Sidebar";
 import { StudyForm } from "./components/StudyForm";
 import { StudyResult } from "./components/StudyResult";
+import { fieldObservationService } from "./services/fieldObservationService";
 import { flywheelService } from "./services/flywheelService";
 import { vineyardService } from "./services/vineyardService";
+import type { FieldObservation, FieldObservationDraft } from "./types/fieldObservation";
 import type {
   Activity,
   DashboardData,
@@ -17,6 +21,7 @@ import type {
 import { buildPlotHistoryData, getMarkersForPlot } from "./utils/chartData";
 import { generateId } from "./utils/formatters";
 import { FieldLogView } from "./views/FieldLogView";
+import { FieldObservationsView } from "./views/FieldObservationsView";
 import { OverviewView } from "./views/OverviewView";
 import { PlotDetailView } from "./views/PlotDetailView";
 import { PlotsView } from "./views/PlotsView";
@@ -27,7 +32,9 @@ type AppView =
   | NavigationKey
   | "plot-detail"
   | "create-study"
-  | "study-result";
+  | "study-result"
+  | "add-field-observation"
+  | "field-observation-detail";
 
 function getSidebarView(activeView: AppView): NavigationKey {
   if (activeView === "plot-detail") {
@@ -38,17 +45,24 @@ function getSidebarView(activeView: AppView): NavigationKey {
     return "studies";
   }
 
+  if (activeView === "add-field-observation" || activeView === "field-observation-detail") {
+    return "field-observations";
+  }
+
   return activeView;
 }
 
 function App() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [fieldObservations, setFieldObservations] = useState<FieldObservation[]>([]);
   const [activeView, setActiveView] = useState<AppView>("overview");
   const [selectedPlotId, setSelectedPlotId] = useState("plot-a");
   const [selectedStudyId, setSelectedStudyId] = useState("study-irrigation-a");
+  const [selectedObservationId, setSelectedObservationId] = useState("");
   const [isEventFormOpen, setIsEventFormOpen] = useState(false);
   const [isSavingEvent, setIsSavingEvent] = useState(false);
   const [isCreatingStudy, setIsCreatingStudy] = useState(false);
+  const [isSavingObservation, setIsSavingObservation] = useState(false);
   const [synchronizingStudyId, setSynchronizingStudyId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -57,9 +71,8 @@ function App() {
   useEffect(() => {
     let isMounted = true;
 
-    vineyardService
-      .getDashboardData()
-      .then((data) => {
+    Promise.all([vineyardService.getDashboardData(), fieldObservationService.getFieldObservations()])
+      .then(([data, observations]) => {
         if (!isMounted) {
           return;
         }
@@ -67,6 +80,8 @@ function App() {
         setDashboardData(data);
         setSelectedPlotId(data.plots[0]?.id ?? "plot-a");
         setSelectedStudyId(data.studies[0]?.id ?? "");
+        setFieldObservations(observations);
+        setSelectedObservationId(observations[0]?.id ?? "");
       })
       .catch(() => {
         if (isMounted) {
@@ -94,6 +109,11 @@ function App() {
     [dashboardData?.studies, selectedStudyId],
   );
 
+  const selectedObservation = useMemo(
+    () => fieldObservations.find((observation) => observation.id === selectedObservationId),
+    [fieldObservations, selectedObservationId],
+  );
+
   const pageTitle = useMemo(() => {
     if (activeView === "overview") {
       return "Vineyard Overview";
@@ -111,6 +131,10 @@ function App() {
       return "Studies";
     }
 
+    if (activeView === "field-observations") {
+      return "Field Observations";
+    }
+
     if (activeView === "settings") {
       return "Settings";
     }
@@ -125,6 +149,14 @@ function App() {
 
     if (activeView === "study-result") {
       return "Study Result";
+    }
+
+    if (activeView === "add-field-observation") {
+      return "Add Field Observation";
+    }
+
+    if (activeView === "field-observation-detail") {
+      return "Field Observation Detail";
     }
 
     return "Brainyard";
@@ -205,6 +237,36 @@ function App() {
       setToastMessage("Study created and evidence package prepared.");
     } finally {
       setIsCreatingStudy(false);
+    }
+  }
+
+  async function handleCreateFieldObservation(draft: FieldObservationDraft) {
+    setIsSavingObservation(true);
+
+    try {
+      const observation = await fieldObservationService.createFieldObservation(draft);
+      const activity: Activity = {
+        id: generateId("activity"),
+        type: "note",
+        title: "Field observation recorded",
+        description: `${observation.plotName} · ${observation.sampledVines} vines sampled.`,
+        timestamp: observation.createdAt,
+      };
+
+      setFieldObservations((current) => [observation, ...current]);
+      setDashboardData((current) =>
+        current
+          ? {
+              ...current,
+              activities: [activity, ...current.activities],
+            }
+          : current,
+      );
+      setSelectedObservationId(observation.id);
+      setActiveView("field-observation-detail");
+      setToastMessage("Field observation saved successfully.");
+    } finally {
+      setIsSavingObservation(false);
     }
   }
 
@@ -291,9 +353,12 @@ function App() {
               activities={dashboardData.activities}
               alerts={dashboardData.alerts}
               irrigationMarkers={dashboardData.irrigationMarkers}
+              fieldObservations={fieldObservations}
               measurements={dashboardData.measurements}
               plots={dashboardData.plots}
+              onAddObservation={() => setActiveView("add-field-observation")}
               onSelectPlot={handleSelectPlot}
+              onViewFieldObservations={() => setActiveView("field-observations")}
             />
           ) : null}
 
@@ -304,12 +369,18 @@ function App() {
           {activeView === "plot-detail" && selectedPlot ? (
             <PlotDetailView
               fieldEvents={dashboardData.fieldEvents}
+              fieldObservations={fieldObservations}
               irrigationMarkers={dashboardData.irrigationMarkers}
               measurements={dashboardData.measurements}
               plot={selectedPlot}
               sensors={dashboardData.sensors}
+              onAddObservation={() => setActiveView("add-field-observation")}
               onAnalyzeIrrigationResponse={() => setActiveView("create-study")}
               onBack={() => setActiveView("overview")}
+              onOpenObservation={(observationId) => {
+                setSelectedObservationId(observationId);
+                setActiveView("field-observation-detail");
+              }}
             />
           ) : null}
 
@@ -318,6 +389,18 @@ function App() {
               fieldEvents={dashboardData.fieldEvents}
               plots={dashboardData.plots}
               onRecordEvent={() => setIsEventFormOpen(true)}
+            />
+          ) : null}
+
+          {activeView === "field-observations" ? (
+            <FieldObservationsView
+              observations={fieldObservations}
+              plots={dashboardData.plots}
+              onAddObservation={() => setActiveView("add-field-observation")}
+              onOpenObservation={(observationId) => {
+                setSelectedObservationId(observationId);
+                setActiveView("field-observation-detail");
+              }}
             />
           ) : null}
 
@@ -340,6 +423,24 @@ function App() {
               plots={dashboardData.plots}
               onCancel={() => setActiveView("studies")}
               onSubmit={handleCreateStudy}
+            />
+          ) : null}
+
+          {activeView === "add-field-observation" ? (
+            <FieldObservationForm
+              defaultPlotId={selectedPlotId}
+              isSubmitting={isSavingObservation}
+              plots={dashboardData.plots}
+              vineyard={dashboardData.vineyard}
+              onCancel={() => setActiveView("field-observations")}
+              onSubmit={handleCreateFieldObservation}
+            />
+          ) : null}
+
+          {activeView === "field-observation-detail" && selectedObservation ? (
+            <FieldObservationDetail
+              observation={selectedObservation}
+              onBack={() => setActiveView("field-observations")}
             />
           ) : null}
 
