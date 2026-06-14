@@ -8,9 +8,9 @@ Our vision is to create an **off-grid wireless mesh network of environmental sen
 
 ## Team
 
-* Susanna Kayed
-* Roman Alexandrov
-* Carlotta Cruciani
+* Susanna Kayed  [linkedin](https://www.linkedin.com/in/susanna-kayed/)
+* Roman Alexandrov  [linkedin](https://www.linkedin.com/in/roman-alexandrov-a75b89195/)
+* Carlotta Cruciani  [linkedin](https://www.linkedin.com/in/carlotta-cruciani-6a8604358/)
 
 <br>
 
@@ -83,19 +83,19 @@ Brainfield Backend  →  Flywheel (Paradigm)
       ↓							↓
 Frontend Dashboard			Researchers
       ↓
-AI Analysis & Recommendations
+AI Analysis &
+Recommendations
 ```
 <br>
 
 ## HackRome MVP
 
-During HackRome 2026, we developed a functional hardware proof-of-concept demonstrating the Brainfield vision. The prototype node was capable of collecting environmental data and served as the foundation for the future distributed sensing network.
+During HackRome 2026, we developed a functional hardware proof-of-concept demonstrating the Brainfield vision. The prototype node was capable of collecting environmental data as well as passing it wirelessly to the backend and served as the foundation for the future distributed sensing network.
 
 <br>
 
 ## Future Development
 
-* Low-power battery operation
 * Solar-powered nodes
 * Expanded sensor support
 * Larger mesh deployments
