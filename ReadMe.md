@@ -4,6 +4,7 @@
 
 Our vision is to create an **off-grid wireless mesh network of environmental sensing nodes** capable of monitoring large agricultural areas such as vineyards, orchards, and crop fields in real time.
 
+![Brainyard](assets/brainyard-banner.png)
 <br>
 
 ## Team
